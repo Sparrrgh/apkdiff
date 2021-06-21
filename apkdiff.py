@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import os
@@ -78,7 +78,7 @@ def main():
 
 def apktoolit(file, dir):
     print("Running apktool against '" + format(file, bcolors.OKBLUE) + "'")
-    call(["apktool", "d", "--no-debug-info", "-o", dir, file], stdout=open(os.devnull, 'w'), stderr=STDOUT)
+    call(["apktool", "d", "--no-debug-info", "--match-original", "-o", dir, file], stdout=open(os.devnull, 'w'), stderr=STDOUT)
     print("[" + format("OK", bcolors.OKGREEN) + "]")
 
 def compare(folder1, folder2):
@@ -96,7 +96,6 @@ def report_full_closure(self):
 
             content1 = reader(self.left + "/" + name).splitlines(1)
             content2 = reader(self.right + "/" + name).splitlines(1)
-
             diff = difflib.unified_diff(content1, content2)
             tidy(list(diff))
 
@@ -108,14 +107,27 @@ def report_full_closure(self):
 
 def tidy(lines):
     sorted = ""
-
-    for line in lines:
-        if line[:1] == "+":
-            line = format(line, bcolors.OKGREEN)
-        elif line[:1] == "-":
-            line = format(line, bcolors.FAIL)
-
-        sorted += line
+    i = 0
+    while i < len(lines):
+        line = ""
+        report = True
+        #Check if they differ because of apktools naming
+        if lines[i][:1] == "-" and lines[i][1:2] != "-" :
+            if len(lines[i]) == len(lines[i+1]):
+                for c in range(1,len(lines[i])):
+                    if lines[i][c] != lines[i+1][c]:
+                        if not lines[i][c-1].isalnum() and not lines[i][c+1].isalnum():
+                            report = False
+        if lines[i][:1] == "+":
+            line = format(lines[i], bcolors.OKGREEN)
+        elif lines[i][:1] == "-":
+            line = format(lines[i], bcolors.FAIL)
+        # If the diff is caused by apktool naming don't report the diff
+        if report:
+            sorted += line
+            i+=1
+        else:
+            i+=2
 
     print(sorted)
 
@@ -143,3 +155,4 @@ def extract(apk, dir):
 
 if __name__ == '__main__':
     main()
+

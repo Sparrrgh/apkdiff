@@ -89,16 +89,15 @@ def compare(folder1, folder2):
 
 def report_full_closure(self):
     for name in self.diff_files:
-
         if not re.match(ignore, name):
-            print("[" + format(name, bcolors.OKGREEN)  + "] " + 
-                    format(self.left.replace(args.output + "1",""), bcolors.OKBLUE))
-
             content1 = reader(self.left + "/" + name).splitlines(1)
             content2 = reader(self.right + "/" + name).splitlines(1)
             diff = difflib.unified_diff(content1, content2)
-            tidy(list(diff))
-
+            tidied = tidy(list(diff))
+            if tidied.replace(" \n","") != f"{format('---', bcolors.FAIL)}{format('+++', bcolors.OKGREEN)}":
+                print("[" + format(name, bcolors.OKGREEN)  + "] " + 
+                    format(self.left.replace(args.output + "1",""), bcolors.OKBLUE))
+                print(tidied)
             global count
             count += 1
 
@@ -118,18 +117,17 @@ def tidy(lines):
                     if lines[i][c] != lines[i+1][c]:
                         if not lines[i][c-1].isalnum() and not lines[i][c+1].isalnum():
                             report = False
-        if lines[i][:1] == "+":
-            line = format(lines[i], bcolors.OKGREEN)
-        elif lines[i][:1] == "-":
-            line = format(lines[i], bcolors.FAIL)
         # If the diff is caused by apktool naming don't report the diff
         if report:
+            if lines[i][:1] == "+":
+                line = format(lines[i], bcolors.OKGREEN)
+            elif lines[i][:1] == "-":
+                line = format(lines[i], bcolors.FAIL)
             sorted += line
             i+=1
         else:
             i+=2
-
-    print(sorted)
+    return sorted
 
 def reader(file):
     f = open(file, 'r', encoding='utf8', errors='ignore')

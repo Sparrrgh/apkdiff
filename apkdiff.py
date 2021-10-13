@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys
+from pathlib import Path
 import os
 import zipfile
 from filecmp import *
@@ -10,7 +10,7 @@ import re
 import argparse
 import difflib
 
-at = "at/"
+at = "at"
 ignore = ".*(align|apktool.yml|pak|MF|RSA|SF|bin|so)"
 count = 0
 args = None
@@ -48,12 +48,12 @@ def main():
     folderExists(args.output, True)
 
     # Individual folders for each APK.
-    temp1 = args.output + "1/"
-    temp2 = args.output + "2/"
+    temp1 = Path(args.output) / "1"
+    temp2 = Path(args.output) / "2"
 
     # Extracted code + resources from Apktool.
-    at1 = temp1 + at
-    at2 = temp2 + at
+    at1 = temp1 / at
+    at2 = temp2 / at
 
     folderExists(temp1, True)
     folderExists(temp2, True)
@@ -90,8 +90,8 @@ def compare(folder1, folder2):
 def report_full_closure(self):
     for name in self.diff_files:
         if not re.match(ignore, name):
-            content1 = reader(self.left + "/" + name).splitlines(1)
-            content2 = reader(self.right + "/" + name).splitlines(1)
+            content1 = reader(Path(self.left) / name).splitlines(1)
+            content2 = reader(Path(self.right) / name).splitlines(1)
             diff = difflib.unified_diff(content1, content2)
             tidied = tidy(list(diff))
             if tidied.replace(" \n","") != f"{format('---', bcolors.FAIL)}{format('+++', bcolors.OKGREEN)}":

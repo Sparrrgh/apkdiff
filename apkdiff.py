@@ -98,8 +98,8 @@ def report_full_closure(self):
                 print("[" + format(name, bcolors.OKGREEN)  + "] " + 
                     format(self.left.replace(args.output + "1",""), bcolors.OKBLUE))
                 print(tidied)
-            global count
-            count += 1
+                global count
+                count += 1
 
     for sd in self.subdirs.values():
         report_full_closure(sd)
